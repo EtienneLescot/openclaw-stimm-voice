@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.2](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.1...v1.0.2) (2026-02-28)
+
+
+### Bug Fixes
+
+* **ci:** trigger 1.0.2 release to validate automated publish workflow ([55e860e](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/55e860e2be46ddc7c322c14fb9293d2ce0d8245f))
+* **ci:** use npm install instead of npm ci to avoid cross-platform lockfile drift ([58a5293](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/58a5293124c57f81d3e07a6db4da0904c979e078))
+
 ## [1.0.1](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.0...v1.0.1) (2026-02-28)
 
 
