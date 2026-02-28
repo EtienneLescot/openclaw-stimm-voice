@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.3](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.2...v1.0.3) (2026-02-28)
+
+
+### Bug Fixes
+
+* **ci:** remove registry-url to avoid token injection conflict with OIDC publish ([855b572](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/855b572bc7577e0718343e1e96496442d55b74a1))
+* **ci:** trigger 1.0.3 release to validate OIDC trusted publisher publish ([a7c6396](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/a7c63965f50cf813c93a55a0595832e437e24832))
+
 ## [1.0.2](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.1...v1.0.2) (2026-02-28)
 
 
