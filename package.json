@@ -1,6 +1,6 @@
 {
   "name": "openclaw-stimm-voice",
-  "version": "2026.2.20",
+  "version": "1.0.0",
   "description": "OpenClaw third-party plugin — Stimm dual-agent real-time voice conversations",
   "keywords": [
     "livekit",
