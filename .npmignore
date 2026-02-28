@@ -3,3 +3,4 @@ src/**/*.test.ts
 *.config.ts
 python/.venv/
 docker/
+HANDOVER.md
