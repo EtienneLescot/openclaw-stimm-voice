@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.4](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.3...v1.0.4) (2026-02-28)
+
+
+### Bug Fixes
+
+* **ci:** restore registry-url then delete _authToken so OIDC trusted publisher can authenticate ([1a3a88a](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/1a3a88a53a69b89c5f4f873db1d64be779a6a990))
+* **ci:** trigger 1.0.4 to validate OIDC auth fix ([8a1a516](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/8a1a5169e0e77e8f5762bac222e6e5fb085c8dba))
+
 ## [1.0.3](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.2...v1.0.3) (2026-02-28)
 
 
