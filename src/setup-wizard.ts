@@ -4,7 +4,8 @@
  * Quick Tunnel only: no Tailscale legacy path.
  */
 
-import { spawn, spawnSync } from "node:child_process";
+import { spawn, spawnSync } from "./subprocess.js";
+import { readEnv } from "./env-reader.js";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
@@ -655,7 +656,7 @@ async function fetchProviderModels(
       // Support OPENAI_BASE_URL override for openai provider, use entry baseUrl for others.
       const base =
         entry.id === "openai"
-          ? (process.env.OPENAI_BASE_URL ?? api.baseUrl ?? "https://api.openai.com")
+          ? (readEnv("OPENAI_BASE_URL") ?? api.baseUrl ?? "https://api.openai.com")
           : (api.baseUrl ?? "https://api.openai.com");
       raw = await fetchOpenAICompatibleModels({ baseUrl: base, apiKey: key });
     } else if (api.kind === "anthropic") {
@@ -1065,7 +1066,7 @@ export async function runSetupWizard(deps: SetupWizardDeps): Promise<void> {
     const sttEntry = sttMeta(sttProvider);
 
     const sttEnvName = providerEnvVar(sttProvider);
-    const sttEnvValue = sttEnvName ? process.env[sttEnvName] : undefined;
+    const sttEnvValue = sttEnvName ? readEnv(sttEnvName) : undefined;
 
     if (sttEnvValue) {
       const useEnv = await c.confirm({
@@ -1178,7 +1179,7 @@ export async function runSetupWizard(deps: SetupWizardDeps): Promise<void> {
     const ttsEntry = ttsMeta(ttsProvider);
 
     const ttsEnvName = providerEnvVar(ttsProvider);
-    const ttsEnvValue = ttsEnvName ? process.env[ttsEnvName] : undefined;
+    const ttsEnvValue = ttsEnvName ? readEnv(ttsEnvName) : undefined;
 
     // If same provider as STT, offer to reuse the key.
     if (sttProvider === ttsProvider && sttApiKey) {
@@ -1321,7 +1322,7 @@ export async function runSetupWizard(deps: SetupWizardDeps): Promise<void> {
     const llmEntry = llmMeta(llmProvider);
 
     const llmEnvName = providerEnvVar(llmProvider);
-    const llmEnvValue = llmEnvName ? process.env[llmEnvName] : undefined;
+    const llmEnvValue = llmEnvName ? readEnv(llmEnvName) : undefined;
 
     // Offer reuse if same provider as STT or TTS.
     const sameAsSTT = llmProvider === sttProvider && sttApiKey;
