@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.5](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.4...v1.0.5) (2026-02-28)
+
+
+### Bug Fixes
+
+* **ci:** strip _authToken from npmrc with sed so npm uses OIDC trusted publisher ([e0440b3](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/e0440b32daceb6372627fc28040f5a0f9b07aea7))
+
 ## [1.0.4](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.3...v1.0.4) (2026-02-28)
 
 
