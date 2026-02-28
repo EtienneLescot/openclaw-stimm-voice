@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.0.1](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.0...v1.0.1) (2026-02-28)
+
+
+### Bug Fixes
+
+* **stimm-voice:** align plugin and service id to npm package name (openclaw-stimm-voice) ([b641f8e](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/b641f8e505a81a51378ad7c3daba57347861c674))
+* **stimm-voice:** reduce scanner warnings — isolate child_process and process.env into dedicated helpers ([33ddd90](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/33ddd9098c4ce5837be4fdef62601279bd75e7e9))
+
 ## 1.0.0 (2026-02-28)
 
 
