@@ -78,7 +78,7 @@ function loadExistingConfig(): ExistingConfig {
   if (!existsSync(configPath)) return {};
   try {
     const raw = JSON.parse(readFileSync(configPath, "utf-8"));
-    const base = deepGet(raw, ["plugins", "entries", "stimm-voice", "config"]) as
+    const base = deepGet(raw, ["plugins", "entries", "openclaw-stimm-voice", "config"]) as
       | Record<string, unknown>
       | undefined;
     if (!base) return {};
