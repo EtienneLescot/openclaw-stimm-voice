@@ -1,0 +1,42 @@
+{
+  "name": "openclaw-stimm-voice",
+  "version": "2026.2.20",
+  "description": "OpenClaw third-party plugin — Stimm dual-agent real-time voice conversations",
+  "keywords": [
+    "livekit",
+    "openclaw",
+    "openclaw-plugin",
+    "stimm",
+    "voice"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/EtienneLescot/openclaw-stimm-voice"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@livekit/rtc-node": "^0.13.24",
+    "@sinclair/typebox": "0.34.48",
+    "@stimm/protocol": "^0.1.8",
+    "livekit-server-sdk": "^2.0.0",
+    "qrcode-terminal": "^0.12.0",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "openclaw": "^2026.2.27",
+    "typescript": "^5.8.0",
+    "vitest": "^3.0.0"
+  },
+  "peerDependencies": {
+    "openclaw": ">=2026.2.0"
+  },
+  "openclaw": {
+    "extensions": [
+      "./index.ts"
+    ]
+  }
+}
