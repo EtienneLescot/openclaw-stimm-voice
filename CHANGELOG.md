@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.7](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.6...v1.0.7) (2026-03-01)
+
+
+### Bug Fixes
+
+* **ci:** trigger 1.0.7 — npm upgraded for OIDC ([3ed8caf](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/3ed8caf66f17da0c85f429ed4967b512af0d7986))
+
 ## [1.0.6](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.5...v1.0.6) (2026-03-01)
 
 
