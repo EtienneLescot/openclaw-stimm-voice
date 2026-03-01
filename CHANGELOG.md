@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.8](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.7...v1.0.8) (2026-03-01)
+
+
+### Bug Fixes
+
+* **ci:** trigger 1.0.8 — all CI publish fixes in place ([b36edfb](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/b36edfb2d12cd4d965f7c247cc3e745449cf78f4))
+
 ## [1.0.7](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.6...v1.0.7) (2026-03-01)
 
 
