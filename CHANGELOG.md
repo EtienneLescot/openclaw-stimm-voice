@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.0.6](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.5...v1.0.6) (2026-03-01)
+
+
+### Bug Fixes
+
+* **ci:** overwrite npmrc entirely to remove empty _authToken before OIDC publish ([bcb7507](https://github.com/EtienneLescot/openclaw-stimm-voice/commit/bcb750711e3fb88966d430cebaa9f583ea8344f0))
+
 ## [1.0.5](https://github.com/EtienneLescot/openclaw-stimm-voice/compare/v1.0.4...v1.0.5) (2026-02-28)
 
 
