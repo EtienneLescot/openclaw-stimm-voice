@@ -31,10 +31,9 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: https://registry.npmjs.org
 
-      - name: Strip empty auth token so npm falls through to OIDC
-        run: echo "registry=https://registry.npmjs.org/" > "$NPM_CONFIG_USERCONFIG"
+      - name: Configure npm registry for OIDC (no token injection)
+        run: echo "registry=https://registry.npmjs.org/" > ~/.npmrc
 
       - run: npm install
 
