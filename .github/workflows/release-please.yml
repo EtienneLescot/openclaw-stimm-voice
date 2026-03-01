@@ -34,7 +34,7 @@ jobs:
           registry-url: https://registry.npmjs.org
 
       - name: Strip empty auth token so npm falls through to OIDC
-        run: sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
+        run: echo "registry=https://registry.npmjs.org/" > "$NPM_CONFIG_USERCONFIG"
 
       - run: npm install
 
