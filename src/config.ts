@@ -149,9 +149,9 @@ export const AccessConfigSchema = z.object({
   claimTtlSeconds: z.number().int().positive().default(120),
   /** LiveKit client token lifetime for browser join tokens. */
   livekitTokenTtlSeconds: z.number().int().positive().default(300),
-  /** Optional shared secret for `POST /stimm/supervisor` hardening. */
+  /** Optional shared secret for the supervisor endpoint (/stimm/supervisor) hardening. */
   supervisorSecret: z.string().optional(),
-  /** Allow direct `POST /voice` session creation (dev-only). */
+  /** Allow direct session creation via the /voice endpoint (dev-only). */
   allowDirectWebSessionCreate: z.boolean().default(false),
   /** Claim exchange rate limit per IP per minute. */
   claimRateLimitPerMinute: z.number().int().positive().default(20),

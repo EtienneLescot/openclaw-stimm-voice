@@ -128,7 +128,7 @@ function verifyClaimSignature(payloadB64: string, signature: string, secret: str
 // ---------------------------------------------------------------------------
 
 const stimmVoicePlugin = {
-  id: "stimm-voice",
+  id: "openclaw-stimm-voice",
   name: "Stimm Voice",
   description: "Real-time voice conversations powered by Stimm dual-agent architecture",
 
@@ -817,7 +817,7 @@ const stimmVoicePlugin = {
     // -- Service lifecycle --------------------------------------------------
 
     api.registerService({
-      id: "stimm-voice",
+      id: "openclaw-stimm-voice",
       start: async () => {
         if (!config.enabled) return;
         api.logger.info("[stimm-voice] Service started.");

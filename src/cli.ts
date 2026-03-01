@@ -5,6 +5,7 @@
  */
 
 import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { spawnSync } from "./subprocess.js";
 import qrcode from "qrcode-terminal";
 import type { StimmVoiceConfig } from "./config.js";
 
@@ -365,8 +366,6 @@ export function registerStimmVoiceCli(deps: VoiceCliDeps): void {
 
   const doctor = program.command("voice:doctor");
   doctor.description("Check voice pipeline prerequisites").action(async () => {
-    const { spawnSync } = await import("node:child_process");
-
     if (config.access.mode === "quick-tunnel") {
       const probe = spawnSync("cloudflared", ["--version"], { encoding: "utf8" });
       if (probe.status === 0) {
