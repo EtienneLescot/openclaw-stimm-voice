@@ -19,6 +19,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@clack/prompts": "^1.0.1",
     "@livekit/rtc-node": "^0.13.24",
     "@sinclair/typebox": "0.34.48",
     "@stimm/protocol": "^0.1.8",
