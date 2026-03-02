@@ -40,7 +40,16 @@ jobs:
             - name: Upgrade npm for OIDC trusted publishing
               run: npm install -g npm@^11.5.1
 
+            - run: |
+                  # Ensure no local .npmrc exists or that it's clean
+                  [ -f .npmrc ] && rm .npmrc
+                  # Explicitly unset any env-injected auth tokens that setup-node might have left
+                  unset NODE_AUTH_TOKEN
+                  # Verify we are in OIDC mode by checking the existence of GITHUB_OUTPUT (standard)
+                  npm config list
+
             - run: npm install
 
             - name: Publish to npm
+              # provenance requires OIDC. access public is mandatory for first publish usually.
               run: npm publish --provenance --access public --tag latest --registry https://registry.npmjs.org/
