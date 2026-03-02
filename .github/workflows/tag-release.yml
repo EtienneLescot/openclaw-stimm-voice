@@ -41,8 +41,9 @@ jobs:
             - name: Upgrade npm for OIDC trusted publishing
               run: npm install -g npm@^11.5.1
 
-            - name: Strip empty auth token so npm falls through to OIDC
-              run: sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
+            - run: |
+                  npm config set registry "https://registry.npmjs.org/"
+                  sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
 
             - run: npm install
 
