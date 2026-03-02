@@ -1,19 +1,21 @@
-name: Tag Release
+name: Tag and Publish
 
 # When the release PR is merged, its commit message is "chore: release X.Y.Z".
-# This workflow detects that pattern, creates the matching tag, and pushes it —
-# which triggers publish.yml to npm-publish.
+# This workflow detects that pattern, creates the tag AND publishes to npm in
+# one job — avoiding the GitHub Actions restriction that prevents GITHUB_TOKEN
+# tag pushes from triggering downstream workflows.
 
 on:
     push:
         branches: [main]
 
 jobs:
-    tag:
+    tag-and-publish:
         if: "startsWith(github.event.head_commit.message, 'chore: release')"
         runs-on: ubuntu-latest
         permissions:
             contents: write
+            id-token: write  # Required for npm OIDC trusted publishing
 
         steps:
             - uses: actions/checkout@v4
@@ -30,3 +32,19 @@ jobs:
                   git config user.email "github-actions[bot]@users.noreply.github.com"
                   git tag "v${{ steps.pkg.outputs.version }}"
                   git push origin "v${{ steps.pkg.outputs.version }}"
+
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 22
+                  registry-url: 'https://registry.npmjs.org/'
+
+            - name: Upgrade npm for OIDC trusted publishing
+              run: npm install -g npm@^11.5.1
+
+            - name: Strip empty auth token so npm falls through to OIDC
+              run: sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
+
+            - run: npm install
+
+            - name: Publish to npm
+              run: npm publish --provenance --access public --tag latest
