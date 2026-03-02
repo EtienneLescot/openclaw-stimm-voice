@@ -15,7 +15,7 @@ jobs:
         runs-on: ubuntu-latest
         permissions:
             contents: write
-            id-token: write  # Required for npm OIDC trusted publishing
+            id-token: write  # Required for npm provenance attestation
 
         steps:
             - uses: actions/checkout@v4
@@ -36,20 +36,15 @@ jobs:
             - uses: actions/setup-node@v4
               with:
                   node-version: 22
+                  registry-url: 'https://registry.npmjs.org/'
 
             - name: Upgrade npm for OIDC trusted publishing
               run: npm install -g npm@^11.5.1
 
-            - run: |
-                  # Ensure no local .npmrc exists or that it's clean
-                  [ -f .npmrc ] && rm .npmrc
-                  # Explicitly unset any env-injected auth tokens that setup-node might have left
-                  unset NODE_AUTH_TOKEN
-                  # Verify we are in OIDC mode by checking the existence of GITHUB_OUTPUT (standard)
-                  npm config list
+            - name: Strip empty auth token so npm falls through to OIDC
+              run: sed -i '/_authToken/d' "$NPM_CONFIG_USERCONFIG"
 
             - run: npm install
 
             - name: Publish to npm
-              # provenance requires OIDC. access public is mandatory for first publish usually.
-              run: npm publish --provenance --access public --tag latest --registry https://registry.npmjs.org/
+              run: npm publish --provenance --access public --tag latest
