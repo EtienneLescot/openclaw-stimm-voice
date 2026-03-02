@@ -1,0 +1,78 @@
+name: Prepare Release PR
+
+# On every push to main (except release commits themselves), create or refresh
+# a PR that bumps package.json to the next CalVer patch.  Merging that PR is
+# the only action required to ship a release.
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    prepare:
+        # Avoid infinite loop: skip if this push is already the release commit.
+        if: "!startsWith(github.event.head_commit.message, 'chore: release')"
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+            pull-requests: write
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  fetch-tags: true
+
+            - name: Compute next CalVer
+              id: calver
+              run: |
+                  YEAR=$(date -u +%Y)
+                  MONTH=$(date -u +%-m)
+                  BASE="${YEAR}.${MONTH}"
+
+                  LAST_PATCH=$(git tag --list "v${BASE}.*" \
+                    | sed "s/^v${BASE}\.\([0-9]*\).*/\1/" \
+                    | grep -E '^[0-9]+$' | sort -n | tail -1)
+
+                  PATCH=$(( ${LAST_PATCH:-0} + 1 ))
+                  VERSION="${BASE}.${PATCH}"
+
+                  echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+                  echo "branch=release/v${VERSION}" >> "$GITHUB_OUTPUT"
+
+            - name: Create or refresh release branch
+              run: |
+                  VERSION="${{ steps.calver.outputs.version }}"
+                  BRANCH="${{ steps.calver.outputs.branch }}"
+
+                  git config user.name  "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+
+                  git checkout -B "$BRANCH"
+
+                  node -e "
+                    const fs = require('fs');
+                    const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+                    pkg.version = '$VERSION';
+                    fs.writeFileSync('package.json', JSON.stringify(pkg, null, 2) + '\n');
+                  "
+
+                  git add package.json
+                  git commit -m "chore: release ${VERSION}"
+                  git push origin "$BRANCH" --force
+
+            - name: Open PR (if not already open)
+              env:
+                  GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              run: |
+                  VERSION="${{ steps.calver.outputs.version }}"
+                  BRANCH="${{ steps.calver.outputs.branch }}"
+
+                  EXISTING=$(gh pr list --head "$BRANCH" --json number --jq '.[0].number')
+                  if [[ -z "$EXISTING" ]]; then
+                    gh pr create \
+                      --title "chore: release ${VERSION}" \
+                      --body "Automated CalVer release — merging this PR will tag and publish \`${VERSION}\` to npm." \
+                      --base main \
+                      --head "$BRANCH"
+                  fi

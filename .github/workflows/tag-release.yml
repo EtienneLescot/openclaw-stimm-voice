@@ -1,0 +1,32 @@
+name: Tag Release
+
+# When the release PR is merged, its commit message is "chore: release X.Y.Z".
+# This workflow detects that pattern, creates the matching tag, and pushes it —
+# which triggers publish.yml to npm-publish.
+
+on:
+    push:
+        branches: [main]
+
+jobs:
+    tag:
+        if: "startsWith(github.event.head_commit.message, 'chore: release')"
+        runs-on: ubuntu-latest
+        permissions:
+            contents: write
+
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Read version from package.json
+              id: pkg
+              run: |
+                  VERSION=$(node -p "require('./package.json').version")
+                  echo "version=${VERSION}" >> "$GITHUB_OUTPUT"
+
+            - name: Create and push tag
+              run: |
+                  git config user.name  "github-actions[bot]"
+                  git config user.email "github-actions[bot]@users.noreply.github.com"
+                  git tag "v${{ steps.pkg.outputs.version }}"
+                  git push origin "v${{ steps.pkg.outputs.version }}"
