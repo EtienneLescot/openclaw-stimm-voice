@@ -1471,7 +1471,6 @@ export async function runSetupWizard(deps: SetupWizardDeps): Promise<void> {
 
   // -- Install selected Stimm extras -------------------------------------
 
-  const pythonDir = join(deps.extensionDir, "python");
   let extrasInstalled = false;
   let pythonExe = join(pythonDir, ".venv", "bin", "python");
   if (!existsSync(pythonExe)) {
