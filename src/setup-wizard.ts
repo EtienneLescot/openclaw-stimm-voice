@@ -291,43 +291,28 @@ function findPythonForWizard(extensionDir: string): string | null {
 
 function loadStimmProviderData(extensionDir: string): StimmProviderData | null {
   const pythonExe = findPythonForWizard(extensionDir);
-  if (!pythonExe) {
-    process.stderr.write("[stimm-voice] python executable not found in findPythonForWizard\n");
-    return null;
-  }
+  if (!pythonExe) return null;
 
   const script = `
 import json
-import sys
-try:
-    from stimm import get_provider_catalog, list_runtime_providers
-except ImportError as e:
-    print(f"IMPORT_ERROR: {e}", file=sys.stderr)
-    sys.exit(1)
+from stimm import get_provider_catalog, list_runtime_providers
 
-try:
-    catalog = get_provider_catalog()
-    runtime = {
-        "stt": list_runtime_providers("stt"),
-        "tts": list_runtime_providers("tts"),
-        "llm": list_runtime_providers("llm"),
-    }
-    print(json.dumps({"catalog": catalog, "runtime": runtime}))
-except Exception as e:
-    print(f"RUNTIME_ERROR: {e}", file=sys.stderr)
-    sys.exit(1)
+catalog = get_provider_catalog()
+runtime = {
+    "stt": list_runtime_providers("stt"),
+    "tts": list_runtime_providers("tts"),
+    "llm": list_runtime_providers("llm"),
+}
+
+print(json.dumps({"catalog": catalog, "runtime": runtime}))
 `;
 
   try {
     const result = spawnSync(pythonExe, ["-c", script], {
       encoding: "utf8",
-      timeout: 15_000,
+      timeout: 8_000,
     });
-    if (result.status !== 0) {
-      process.stderr.write(`[stimm-voice] stimm API call failed (exit ${result.status}).\n`);
-      if (result.stderr) process.stderr.write(result.stderr + "\n");
-      return null;
-    }
+    if (result.status !== 0) return null;
     const parsed = JSON.parse(result.stdout) as Record<string, unknown>;
     const runtimeRecord =
       parsed.runtime && typeof parsed.runtime === "object" && !Array.isArray(parsed.runtime)
@@ -341,8 +326,7 @@ except Exception as e:
         llm: normalizeRuntimeIds(runtimeRecord.llm),
       },
     };
-  } catch (err) {
-    console.error("[stimm-voice] Failed to load stimm provider data:", err);
+  } catch {
     return null;
   }
 }
