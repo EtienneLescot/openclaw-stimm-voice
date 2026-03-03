@@ -384,7 +384,7 @@ export class AgentProcess {
         logger.info("[stimm-voice] Installing Python dependencies (this may take a minute)...");
         const reqs = readFileSync(reqFile, "utf-8").trim();
         logger.info(`[stimm-voice] requirements: ${reqs.split("\n").join(", ")}`);
-        execSync(`${JSON.stringify(pip)} install -r ${JSON.stringify(reqFile)}`, {
+        execSync(`${JSON.stringify(pip)} install --no-cache-dir -r ${JSON.stringify(reqFile)}`, {
           cwd: pythonDir,
           stdio: "pipe",
           timeout: 300_000, // 5 min for large installs

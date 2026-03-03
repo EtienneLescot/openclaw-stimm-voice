@@ -1510,7 +1510,7 @@ export async function runSetupWizard(deps: SetupWizardDeps): Promise<void> {
       await c.log.step(`Installing Stimm extras: ${extrasResolution.extras.join(", ")}...`);
       const install = spawnSync(
         pythonExe,
-        ["-m", "pip", "install", `stimm[${extrasResolution.extras.join(",")}]`],
+        ["-m", "pip", "install", "--no-cache-dir", `stimm[${extrasResolution.extras.join(",")}]`],
         {
           stdio: "inherit",
           timeout: 300_000,
