@@ -927,6 +927,27 @@ export async function runSetupWizard(deps: SetupWizardDeps): Promise<void> {
   const c = await clack();
   c.intro("Stimm Voice — Setup Wizard");
 
+  // -- Ensure Python venv is ready -----------------------------------------
+
+  const pythonDir = join(deps.extensionDir, "python");
+  const venvPython = join(pythonDir, ".venv", "bin", "python");
+
+  if (!existsSync(venvPython)) {
+    await c.log.step("Initializing Python virtual environment (this may take a minute)...");
+    const ok = AgentProcess.ensureVenv(pythonDir, {
+      info: (msg) => c.log.info(msg),
+      warn: (msg) => c.log.warn(msg),
+      error: (msg) => c.log.error(msg),
+    });
+    if (!ok) {
+      await c.log.error(
+        "Failed to initialize Python environment. Please install Python 3.10+ manually and try again.",
+      );
+      return c.outro("Setup cancelled.");
+    }
+    await c.log.success("Python environment ready.");
+  }
+
   // Load existing config to allow skipping sections.
   const existing = loadExistingConfig();
 
@@ -973,16 +994,9 @@ export async function runSetupWizard(deps: SetupWizardDeps): Promise<void> {
       api: { kind: "livekit-docs" },
     } satisfies LlmEntry);
 
-  // -- Check Python venv ---------------------------------------------------
+  // -- Check Python venv — already done at start --------------------------
 
-  const venvPath = join(deps.extensionDir, "python", ".venv", "bin", "python");
-  if (existsSync(venvPath)) {
-    await c.log.success("Python virtual environment found.");
-  } else {
-    await c.log.warn(
-      "Python virtual environment not found. It will be auto-created on first gateway start.",
-    );
-  }
+  await c.log.success("Python virtual environment found.");
 
   // -- cloudflared ---------------------------------------------------------
 
