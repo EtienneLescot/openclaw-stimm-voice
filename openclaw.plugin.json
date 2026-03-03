@@ -1,5 +1,5 @@
 {
-  "id": "openclaw-stimm-voice",
+  "id": "stimm-voice",
   "name": "Stimm Voice",
   "description": "Real-time voice conversations powered by Stimm dual-agent architecture",
   "configSchema": {
