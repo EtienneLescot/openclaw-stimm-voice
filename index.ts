@@ -101,6 +101,22 @@ function getGatewayPort(config: CoreConfig): number {
   );
 }
 
+/**
+ * Extract the gateway auth token from core config so the plugin can embed it
+ * in share URLs as #token=<gatewayToken>. This lets the Control UI store the
+ * token in localStorage for the tunnel origin on first open, avoiding the
+ * "unauthorized: gateway token missing" error when accessing via a remote URL.
+ * Returns null when auth mode is not token-based or token is unset.
+ */
+function getGatewayAuthToken(config: CoreConfig): string | null {
+  const gateway = (config as Record<string, unknown>)["gateway"] as
+    | Record<string, unknown>
+    | undefined;
+  const auth = gateway?.["auth"] as Record<string, unknown> | undefined;
+  const token = auth?.["token"];
+  return typeof token === "string" && token.trim() ? token.trim() : null;
+}
+
 /** Emit a one-time actionable warning when the quick-tunnel origin is absent
  *  from gateway.controlUi.allowedOrigins, which would block the Voice UI. */
 function warnIfOriginNotAllowed(
@@ -566,10 +582,16 @@ const stimmVoicePlugin = {
           roomName: session.roomName,
           channel: params.channel,
         });
+        // Embed the gateway auth token as a URL hash fragment so the Control UI
+        // can store it in localStorage for this tunnel origin on first open.
+        // This prevents "unauthorized: gateway token missing" when opening the
+        // share link from a browser that has never visited this tunnel origin.
+        const gatewayToken = getGatewayAuthToken(api.config as CoreConfig);
+        const tokenFragment = gatewayToken ? `#token=${gatewayToken}` : "";
         return {
           ...payload,
           claimToken: claim.token,
-          shareUrl: `${tunnelInfo.gatewayUrl}?c=${claim.token}`,
+          shareUrl: `${tunnelInfo.gatewayUrl}?c=${claim.token}${tokenFragment}`,
         };
       }
 
