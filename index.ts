@@ -101,6 +101,41 @@ function getGatewayPort(config: CoreConfig): number {
   );
 }
 
+/** Emit a one-time actionable warning when the quick-tunnel origin is absent
+ *  from gateway.controlUi.allowedOrigins, which would block the Voice UI. */
+function warnIfOriginNotAllowed(
+  voiceUrl: string,
+  coreConfig: CoreConfig,
+  logger: { warn: (msg: string) => void },
+): void {
+  let origin: string;
+  try {
+    origin = new URL(voiceUrl).origin;
+  } catch {
+    return; // malformed URL — skip
+  }
+  const gateway = (coreConfig as Record<string, unknown>)["gateway"] as
+    | Record<string, unknown>
+    | undefined;
+  const controlUi = gateway?.["controlUi"] as
+    | Record<string, unknown>
+    | undefined;
+  const allowedOrigins = controlUi?.["allowedOrigins"];
+  const allowed: string[] = Array.isArray(allowedOrigins)
+    ? allowedOrigins.filter((o): o is string => typeof o === "string")
+    : [];
+  if (allowed.includes("*") || allowed.includes(origin)) return;
+  logger.warn(
+    `[stimm-voice] ⚠️  Quick-tunnel origin "${origin}" is NOT in gateway.controlUi.allowedOrigins.\n` +
+      `  The Voice UI will be blocked by OpenClaw's CORS policy.\n` +
+      `  Run the following command, then restart OpenClaw:\n` +
+      `\n` +
+      `    openclaw config push gateway.controlUi.allowedOrigins "${origin}"\n` +
+      `\n` +
+      `  (If "config push" is unavailable, use: openclaw config set gateway.controlUi.allowedOrigins '["${origin}"]')`,
+  );
+}
+
 function getRequestIp(req: {
   socket?: { remoteAddress?: string | null };
   headers?: Record<string, unknown>;
@@ -195,6 +230,11 @@ const stimmVoicePlugin = {
       });
       if (!started) return null;
       quickTunnel = started;
+      warnIfOriginNotAllowed(
+        started.info.voiceUrl,
+        api.config as CoreConfig,
+        api.logger,
+      );
       return {
         gatewayUrl: started.info.voiceUrl,
         livekitUrl: config.livekit.url,
