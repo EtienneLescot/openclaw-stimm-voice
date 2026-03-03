@@ -948,6 +948,22 @@ export async function runSetupWizard(deps: SetupWizardDeps): Promise<void> {
     await c.log.success("Python environment ready.");
   }
 
+  // -- Ensure base requirements are installed (handles empty/partial venv) --
+
+  await c.log.step("Verifying Python dependencies...");
+  const reqsOk = AgentProcess.ensureRequirements(pythonDir, {
+    info: (msg) => c.log.info(msg),
+    warn: (msg) => c.log.warn(msg),
+    error: (msg) => c.log.error(msg),
+  });
+  if (!reqsOk) {
+    await c.log.error(
+      "Failed to install Python dependencies. Check your network connection and try again.",
+    );
+    return c.outro("Setup cancelled.");
+  }
+  await c.log.success("Python dependencies ready.");
+
   // Load existing config to allow skipping sections.
   const existing = loadExistingConfig();
 

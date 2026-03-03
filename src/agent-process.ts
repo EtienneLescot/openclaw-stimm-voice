@@ -404,6 +404,49 @@ export class AgentProcess {
   }
 
   /**
+   * Ensures the requirements.txt packages are installed in the venv.
+   * Unlike ensureVenv, this runs pip install even if the venv already exists —
+   * handles the case of a partial/empty venv from a previous failed install.
+   *
+   * Returns `true` if dependencies are current, `false` on failure.
+   */
+  static ensureRequirements(
+    pythonDir: string,
+    logger: {
+      info: (msg: string) => void;
+      warn: (msg: string) => void;
+      error: (msg: string) => void;
+    },
+  ): boolean {
+    const venvDir = join(pythonDir, ".venv");
+    const pip = join(venvDir, "bin", "pip");
+    const reqFile = join(pythonDir, "requirements.txt");
+
+    if (!existsSync(pip)) {
+      logger.error("[stimm-voice] pip not found in venv — run setup again to recreate the environment.");
+      return false;
+    }
+    if (!existsSync(reqFile)) {
+      return true; // nothing to install
+    }
+
+    try {
+      const reqs = readFileSync(reqFile, "utf-8").trim();
+      logger.info(`[stimm-voice] Installing/verifying requirements: ${reqs.split("\n").join(", ")}`);
+      execSync(`${JSON.stringify(pip)} install --no-cache-dir -r ${JSON.stringify(reqFile)}`, {
+        cwd: pythonDir,
+        stdio: "pipe",
+        timeout: 300_000,
+      });
+      return true;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      logger.error(`[stimm-voice] Failed to install Python requirements: ${msg}`);
+      return false;
+    }
+  }
+
+  /**
    * Kill any process holding the given TCP port (Linux/macOS).
    * Used to clean up zombie livekit-agents workers before restart.
    */
