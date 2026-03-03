@@ -291,7 +291,10 @@ function findPythonForWizard(extensionDir: string): string | null {
 
 function loadStimmProviderData(extensionDir: string): StimmProviderData | null {
   const pythonExe = findPythonForWizard(extensionDir);
-  if (!pythonExe) return null;
+  if (!pythonExe) {
+    console.error("[stimm-voice] python executable not found in findPythonForWizard");
+    return null;
+  }
 
   const script = `
 import json
@@ -326,7 +329,8 @@ print(json.dumps({"catalog": catalog, "runtime": runtime}))
         llm: normalizeRuntimeIds(runtimeRecord.llm),
       },
     };
-  } catch {
+  } catch (err) {
+    console.error("[stimm-voice] Failed to load stimm provider data:", err);
     return null;
   }
 }
