@@ -628,26 +628,6 @@
       typeof HTMLMediaElement !== "undefined" &&
       typeof HTMLMediaElement.prototype.setSinkId === "function";
 
-    // Read gateway auth token from URL hash and persist it to localStorage so
-    // that the Control UI (and any OpenClaw UI on this origin) can authenticate
-    // with the gateway without a manual login step. This is needed when a share
-    // link embeds #token=<gatewayToken> and is opened from a fresh browser on a
-    // tunnel origin that has never stored the token.
-    (function () {
-      try {
-        const hashParams = new URLSearchParams(window.location.hash.slice(1));
-        const gatewayToken = hashParams.get("token");
-        if (gatewayToken) {
-          const SETTINGS_KEY = "openclaw.control.settings.v1";
-          let existing = {};
-          try { existing = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}"); } catch {}
-          localStorage.setItem(SETTINGS_KEY, JSON.stringify({ ...existing, token: gatewayToken }));
-          // Remove token from hash to avoid it lingering in browser history.
-          history.replaceState(null, "", window.location.pathname + window.location.search);
-        }
-      } catch {}
-    })();
-
     async function createSession() {
       const voicePath = window.location.pathname.replace(/\/$/, "") || "/voice";
       const claimPath = `${voicePath}/claim`;
