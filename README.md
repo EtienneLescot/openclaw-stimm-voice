@@ -23,68 +23,54 @@
 
 > **Early days.** The voice assistant still stutters a bit — latency and fluency will improve as the project evolves. Feedback and contributions are very welcome.
 
-Stimm Voice is a third-party OpenClaw plugin for real-time voice conversations.
-
-It uses a dual-agent architecture:
-
-- A fast Python voice agent (LiveKit + STT/TTS/LLM) handles low-latency speech.
-- OpenClaw acts as the supervisor for reasoning, tools, and long-context decisions.
+Stimm Voice is a third-party OpenClaw plugin that adds real-time voice conversations to OpenClaw. A fast Python voice agent (LiveKit + STT/TTS/LLM) handles low-latency speech while OpenClaw acts as the reasoning supervisor.
 
 ## Provider support
 
-The following providers have been tested end-to-end:
+| Role | Tested ✅ | May work, untested |
+|---|---|---|
+| **LLM** | Groq | OpenAI, Azure OpenAI, … |
+| **TTS** | Deepgram | OpenAI, Cartesia, … |
+| **STT** | Hume, ElevenLabs | … |
 
-| Role | Tested providers |
-|---|---|
-| **LLM** | Groq ✅ |
-| **TTS** | Deepgram ✅ |
-| **STT** | Hume ✅, ElevenLabs ✅ |
-
-Other providers supported by Stimm may work but haven't been validated yet. Contributions and test reports are very welcome.
-
-## Presentation
-
-What this plugin provides:
-
-- Real-time voice sessions backed by LiveKit rooms.
-- Browser entrypoint at `web.path` (default: `/voice`).
-- Claim-token flow for web access (`/voice/claim`) with one-time, short-lived claims.
-- Optional Cloudflare Quick Tunnel for temporary public access.
-- Optional supervisor shared secret for `POST /stimm/supervisor`.
+Contributions and test reports for other providers are very welcome.
 
 ## Install
 
-### Prerequisites
-
-- Node.js 22+
-- Python 3.10+
-- OpenClaw gateway ≥ 2026.2.0 installed and running
-- LiveKit deployment:
-  - local (`ws://localhost:7880`) or
-  - cloud (`wss://<your-project>.livekit.cloud`)
-
-### Install from npm
+**Prerequisites:** Node.js 22+, Python 3.10+, OpenClaw gateway ≥ 2026.2.0, a LiveKit deployment (local or cloud).
 
 ```bash
 openclaw plugins install openclaw-stimm-voice
 ```
 
-### Install from GitHub (latest)
+Restart the gateway, then run the setup wizard — it handles LiveKit credentials, provider selection, and Python extras:
 
 ```bash
-openclaw plugins install https://github.com/EtienneLescot/openclaw-stimm-voice
+openclaw voice:setup
 ```
 
-Then restart the OpenClaw gateway.
+## Usage
 
-Python dependencies use Stimm extras as the single installation contract:
+Start a voice session from CLI:
 
-- Base/default profile from [python/requirements.txt](python/requirements.txt): `stimm[deepgram,openai]`
-- Additional provider plugins are installed by the setup wizard based on selected STT/TTS/LLM providers (`stimm[...]`).
+```bash
+openclaw voice:start
+```
 
-## Config
+Or just ask the OpenClaw agent in any conversation (WhatsApp, etc.):
 
-Set config under `plugins.entries.stimm-voice.config`.
+> "Send me a Stimm Voice link"
+
+The agent starts a session and replies with a one-time link to open on your phone.
+
+---
+
+## Reference
+
+<details>
+<summary>Config (manual / advanced)</summary>
+
+Set config under `plugins.entries.stimm-voice.config`:
 
 ```json5
 {
@@ -118,107 +104,63 @@ Set config under `plugins.entries.stimm-voice.config`.
 ```
 
 Notes:
-
 - The extension is disabled by default (`enabled: false`).
 - `access.mode="quick-tunnel"` requires `cloudflared` on PATH.
-- `voiceAgent.tts.voice` is provider-specific: OpenAI uses voice names (`ash`, `alloy`), ElevenLabs uses `voice_id`, and Cartesia uses voice UUIDs.
-- API keys can be set directly in plugin config, or via env fallbacks (`STIMM_STT_API_KEY`, `STIMM_TTS_API_KEY`, `STIMM_LLM_API_KEY`, then provider-specific env vars).
-- `access.supervisorSecret` also supports env fallback (`STIMM_SUPERVISOR_SECRET`, then `OPENCLAW_SUPERVISOR_SECRET`).
+- `voiceAgent.tts.voice` is provider-specific: OpenAI uses voice names (`ash`, `alloy`), ElevenLabs uses `voice_id`, Cartesia uses voice UUIDs.
+- API keys can be set directly in config or via env fallbacks (`STIMM_STT_API_KEY`, `STIMM_TTS_API_KEY`, `STIMM_LLM_API_KEY`).
+- `access.supervisorSecret` supports env fallback (`STIMM_SUPERVISOR_SECRET`, then `OPENCLAW_SUPERVISOR_SECRET`).
 
-### OpenClaw tools profile
+</details>
 
-The voice supervisor calls the OpenClaw agent to handle reasoning and long-context
-decisions. For the agent to be useful (persist identity, write workspace files,
-use tools), OpenClaw must be configured with at least the `coding` tools profile.
+<details>
+<summary>OpenClaw tools profile</summary>
 
-The default profile set by the OpenClaw onboarding wizard is `messaging` (since
-2026-03-02), which **blocks filesystem tools** — the agent can still respond but
-cannot write `IDENTITY.md`, `USER.md`, or any workspace file.
-
-To enable full agent capability:
+The voice supervisor calls the OpenClaw agent for reasoning and long-context decisions. For full capability (persistent memory, workspace files, tools), configure the `coding` profile:
 
 ```bash
 openclaw config set tools.profile coding
 ```
 
-Then restart the gateway. Without this, the supervisor agent will answer
-conversationally but will have no persistent memory across voice sessions.
+The default `messaging` profile (since 2026-03-02) blocks filesystem tools — the agent can still respond but cannot write `IDENTITY.md`, `USER.md`, or workspace files.
 
-## Usage
+</details>
 
-### Start session from CLI/tool/gateway
-
-```bash
-openclaw voice:start --channel web
-```
-
-### Supervisor logs (high-level)
-
-Use this command to inspect supervisor observability quickly without manual `grep`:
+<details>
+<summary>Supervisor logs</summary>
 
 ```bash
 openclaw voice:logs --limit 40
-```
-
-Interactive follow mode:
-
-```bash
 openclaw voice:logs --watch --interval 2
 ```
 
-Options:
+Options: `--raw`, `--limit <n>`, `--watch`, `--interval <s>`, `--all-events`.
 
-- `--raw`: print raw `OBS_JSON` lines from `/tmp/stimm-agent.log`
-- `--limit <n>`: number of entries to print (default: `40`)
-- `--watch`: keep watching and print new entries continuously (Ctrl+C to stop)
-- `--interval <s>`: refresh interval for watch mode in seconds (default: `2`)
-- `--all-events`: include `inference_started` (hidden by default to reduce noise)
+Prints Stimm supervisor `OBS_JSON` events (`inference_started`, `inference_completed`, `trigger_sent`, `no_action`) and gateway-side `[stimm-voice:supervisor]` lines.
 
-The command prints two sections:
+</details>
 
-- Stimm supervisor `OBS_JSON` events (`inference_started`, `inference_completed`, `trigger_sent`, `no_action`)
-- Gateway-side synthesized lines (`[stimm-voice:supervisor]`) when available
-
-`stimm.start` / `stimm_voice:start_session` returns:
-
-- room metadata
-- `shareUrl` (when quick tunnel is enabled)
-- one-time `claimToken`
-
-### Browser flow
-
-1. Open the returned `shareUrl` on phone.
-2. The page calls `POST /voice/claim` with the claim token.
-3. Gateway validates claim and returns a short-lived LiveKit token.
-4. Browser joins LiveKit.
-
-### HTTP endpoints
+<details>
+<summary>HTTP endpoints</summary>
 
 - `GET <web.path>`: serves the web voice UI.
 - `POST <web.path>/claim`: claim exchange endpoint.
 - `POST <web.path>`: disabled by default (`403`) unless `access.allowDirectWebSessionCreate=true`.
-- `POST /stimm/supervisor`: internal supervisor callback (protected if `access.supervisorSecret` is set).
+- `POST /stimm/supervisor`: internal supervisor callback (protected by `access.supervisorSecret`).
 
-### Gateway methods
+Browser flow: open `shareUrl` → page calls `POST /voice/claim` with claim token → gateway returns a short-lived LiveKit token → browser joins LiveKit.
 
-- `stimm.start`
-- `stimm.end`
-- `stimm.status`
-- `stimm.instruct`
-- `stimm.mode`
+</details>
 
-### Tool
+<details>
+<summary>Gateway methods & tool API</summary>
 
-Tool name: `stimm_voice`
+Gateway methods: `stimm.start`, `stimm.end`, `stimm.status`, `stimm.instruct`, `stimm.mode`
 
-Actions:
+Tool name `stimm_voice`, actions: `start_session`, `end_session`, `status`, `instruct`, `add_context`, `set_mode`
 
-- `start_session`
-- `end_session`
-- `status`
-- `instruct`
-- `add_context`
-- `set_mode`
+`stimm.start` / `start_session` returns room metadata, `shareUrl` (if quick tunnel enabled), and a one-time `claimToken`.
+
+</details>
 
 ## Development
 
