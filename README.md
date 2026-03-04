@@ -90,6 +90,25 @@ Notes:
 - API keys can be set directly in plugin config, or via env fallbacks (`STIMM_STT_API_KEY`, `STIMM_TTS_API_KEY`, `STIMM_LLM_API_KEY`, then provider-specific env vars).
 - `access.supervisorSecret` also supports env fallback (`STIMM_SUPERVISOR_SECRET`, then `OPENCLAW_SUPERVISOR_SECRET`).
 
+### OpenClaw tools profile
+
+The voice supervisor calls the OpenClaw agent to handle reasoning and long-context
+decisions. For the agent to be useful (persist identity, write workspace files,
+use tools), OpenClaw must be configured with at least the `coding` tools profile.
+
+The default profile set by the OpenClaw onboarding wizard is `messaging` (since
+2026-03-02), which **blocks filesystem tools** — the agent can still respond but
+cannot write `IDENTITY.md`, `USER.md`, or any workspace file.
+
+To enable full agent capability:
+
+```bash
+openclaw config set tools.profile coding
+```
+
+Then restart the gateway. Without this, the supervisor agent will answer
+conversationally but will have no persistent memory across voice sessions.
+
 ## Usage
 
 ### Start session from CLI/tool/gateway
@@ -165,3 +184,77 @@ Actions:
 - `instruct`
 - `add_context`
 - `set_mode`
+
+## Development
+
+This section covers the local dev setup to iterate on the plugin without waiting
+for npm publish cycles.
+
+### Repos involved
+
+| Repo | Role |
+|---|---|
+| `~/repos/openclaw` | OpenClaw core — gateway binary (`dist/index.js`) |
+| `~/repos/openclaw-stimm-voice` | This plugin |
+| `~/repos/stimm/packages/protocol-ts` | `@stimm/protocol` TypeScript package |
+
+In **production**, a systemd user service runs the gateway automatically.
+In **dev mode**, `dev-link.sh` stops that service so you can run the gateway
+manually with `pnpm`, which also auto-rebuilds core if stale.
+
+The gateway loads plugins at runtime using **jiti** (TypeScript interpreted
+directly — no plugin build step needed).
+
+### Setup dev mode
+
+```bash
+cd ~/repos/openclaw-stimm-voice
+./scripts/dev-link.sh
+```
+
+This script:
+1. Builds `@stimm/protocol` from source (required — jiti loads its `dist/`)
+2. Symlinks `node_modules/@stimm/protocol` → `~/repos/stimm/packages/protocol-ts`
+3. Symlinks `~/.openclaw/extensions/stimm-voice` → this repo
+4. Stops the systemd service to free port 18789
+
+Then start the gateway in the foreground (auto-rebuilds openclaw core if stale):
+
+```bash
+cd ~/repos/openclaw
+pnpm openclaw gateway run --port 18789
+```
+
+### Workflow per change type
+
+| What you modified | What to do |
+|---|---|
+| **Plugin** — `index.ts`, `voice.html`, `src/config.ts`… | `Ctrl+C` → `pnpm openclaw gateway run --port 18789` |
+| **Protocol** — `~/repos/stimm/packages/protocol-ts/src/` | `npm run build` inside `protocol-ts/` → `Ctrl+C` → relancer le gateway |
+| **OpenClaw core** — `~/repos/openclaw/src/` | `Ctrl+C` → `pnpm openclaw gateway run --port 18789` (rebuild auto) |
+
+For continuous rebuild of `@stimm/protocol` during a session:
+
+```bash
+# Terminal dédié
+./scripts/dev-watch-stimm.sh
+```
+
+### Restore production mode
+
+```bash
+./scripts/dev-unlink.sh
+```
+
+This removes all symlinks, restores the npm backup (or reinstalls from npm if no
+backup), and restarts the systemd service.
+
+### Architecture notes
+
+- Plugin `.ts` files are loaded by jiti — **no compilation needed** after plugin
+  changes, just restart the gateway.
+- `@stimm/protocol` points its `main` to `dist/index.js`, so it **must be built**
+  before any protocol change is visible to jiti.
+- The systemd service is **production mode**. In dev mode, `dev-link.sh` stops it
+  and you run `pnpm openclaw gateway run` instead, which rebuilds core automatically
+  when `src/` is newer than `dist/`.
