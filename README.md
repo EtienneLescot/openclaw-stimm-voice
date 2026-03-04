@@ -1,4 +1,27 @@
-# openclaw-stimm-voice
+<div align="center">
+
+  <h1>openclaw-stimm-voice</h1>
+
+  <p><b>Real-time voice conversations for OpenClaw — one agent talks fast, one agent thinks deep.</b></p>
+
+  <a href="https://www.npmjs.com/package/openclaw-stimm-voice">
+    <img src="https://img.shields.io/npm/v/openclaw-stimm-voice?label=npm" alt="npm">
+  </a>
+  <a href="#">
+    <img src="https://img.shields.io/badge/node-%3E%3D22-green" alt="Node.js">
+  </a>
+  <a href="#">
+    <img src="https://img.shields.io/badge/python-3.10%2B-blue" alt="Python">
+  </a>
+  <a href="#">
+    <img src="https://img.shields.io/badge/livekit-compatible-purple" alt="LiveKit">
+  </a>
+
+</div>
+
+<br>
+
+> **Early days.** The voice assistant still stutters a bit — latency and fluency will improve as the project evolves. Feedback and contributions are very welcome.
 
 Stimm Voice is a third-party OpenClaw plugin for real-time voice conversations.
 
@@ -6,6 +29,18 @@ It uses a dual-agent architecture:
 
 - A fast Python voice agent (LiveKit + STT/TTS/LLM) handles low-latency speech.
 - OpenClaw acts as the supervisor for reasoning, tools, and long-context decisions.
+
+## Provider support
+
+The following providers have been tested end-to-end:
+
+| Role | Tested providers |
+|---|---|
+| **LLM** | Groq ✅ |
+| **TTS** | Deepgram ✅ |
+| **STT** | Hume ✅, ElevenLabs ✅ |
+
+Other providers supported by Stimm may work but haven't been validated yet. Contributions and test reports are very welcome.
 
 ## Presentation
 
