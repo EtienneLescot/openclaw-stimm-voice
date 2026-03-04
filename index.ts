@@ -27,6 +27,17 @@ import { startQuickTunnel, type QuickTunnelRuntime } from "./src/quick-tunnel.js
 import { generateStimmResponse, type StimmResponseResult } from "./src/response-generator.js";
 
 // ---------------------------------------------------------------------------
+// Temporary shim: openclaw SDK types don't yet include `auth` in the
+// registerHttpRoute params (added to runtime but not yet published to npm).
+// Remove this shim once openclaw publishes updated SDK types.
+type ExtendedHttpRouteParams = Parameters<OpenClawPluginApi["registerHttpRoute"]>[0] & {
+  auth: "gateway" | "plugin";
+};
+function registerHttpRoute(api: OpenClawPluginApi, params: ExtendedHttpRouteParams): void {
+  (api.registerHttpRoute as (p: ExtendedHttpRouteParams) => void)(params);
+}
+
+// ---------------------------------------------------------------------------
 // Tool schema — flat object, no Type.Union (per repo guardrails).
 // ---------------------------------------------------------------------------
 
@@ -889,7 +900,7 @@ const stimmVoicePlugin = {
 
     // -- HTTP route (supervisor callback — called by Python OpenClawSupervisor) -
 
-    api.registerHttpRoute({
+    registerHttpRoute(api, {
       path: "/stimm/supervisor",
       auth: "plugin",
       handler: async (req, res) => {
@@ -986,7 +997,7 @@ const stimmVoicePlugin = {
     // If LiveKit HMAC auth is enabled (it is by default), the signature is
     // verified using the API key/secret already configured in this plugin.
 
-    api.registerHttpRoute({
+    registerHttpRoute(api, {
       path: "/stimm/livekit-webhook",
       auth: "plugin",
       handler: async (req, res) => {
@@ -1060,7 +1071,7 @@ const stimmVoicePlugin = {
       const claimPath = `${config.web.path.replace(/\/+$/, "")}/claim`;
       const endPath = `${config.web.path.replace(/\/+$/, "")}/end`;
 
-      api.registerHttpRoute({
+      registerHttpRoute(api, {
         path: claimPath,
         auth: "plugin",
         handler: async (req, res) => {
@@ -1126,7 +1137,7 @@ const stimmVoicePlugin = {
         },
       });
 
-      api.registerHttpRoute({
+      registerHttpRoute(api, {
         path: endPath,
         auth: "plugin",
         handler: async (req, res) => {
@@ -1172,7 +1183,7 @@ const stimmVoicePlugin = {
         },
       });
 
-      api.registerHttpRoute({
+      registerHttpRoute(api, {
         path: config.web.path,
         auth: "plugin",
         handler: async (req, res) => {
